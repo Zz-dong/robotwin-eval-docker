@@ -14,10 +14,15 @@ ENV http_proxy=$HTTP_PROXY
 ENV https_proxy=$HTTPS_PROXY
 ENV no_proxy=$NO_PROXY
 
+# 更换为清华源以提高下载速度和稳定性
+RUN sed -i 's@//.*archive.ubuntu.com@//mirrors.tuna.tsinghua.edu.cn@g' /etc/apt/sources.list && \
+    sed -i 's@//.*security.ubuntu.com@//mirrors.tuna.tsinghua.edu.cn@g' /etc/apt/sources.list
+
 # 安装系统基础依赖
 RUN apt-get update && apt-get install -y \
     python3.10 \
     python3.10-venv \
+    python3.10-dev \
     python3-pip \
     git \
     build-essential \
@@ -32,16 +37,16 @@ WORKDIR /
 RUN git clone https://github.com/RoboTwin-Platform/RoboTwin.git
 WORKDIR /RoboTwin
 
-# 创建虚拟环境
-RUN python3.10 -m venv .venv
+# 创建虚拟环境 
+RUN python3.10 -m venv .venv --prompt robotwin
 
-# 激活虚拟环境并安装基础环境
-RUN /bin/bash -c "source .venv/bin/activate && bash script/_install.sh"
+# 更新pip并激活虚拟环境安装基础环境
+RUN /bin/bash -c "source .venv/bin/activate && python -m pip install --upgrade pip setuptools wheel -i https://pypi.tuna.tsinghua.edu.cn/simple && bash script/_install.sh"
 
 # 激活虚拟环境并安装DP相关依赖
 RUN /bin/bash -c "source .venv/bin/activate && \
     cd policy/DP && \
-    pip install zarr==2.12.0 wandb ipdb gpustat dm_control omegaconf hydra-core==1.2.0 dill==0.3.5.1 einops==0.4.1 diffusers==0.11.1 numba==0.56.4 moviepy imageio av matplotlib termcolor sympy && \
+    pip install zarr==2.12.0 wandb ipdb gpustat dm_control omegaconf hydra-core==1.2.0 dill==0.3.5.1 einops==0.4.1 diffusers==0.11.1 numba==0.56.4 moviepy imageio av matplotlib termcolor sympy -i https://pypi.tuna.tsinghua.edu.cn/simple && \
     pip install -e ."
 
 # 创建必要目录
