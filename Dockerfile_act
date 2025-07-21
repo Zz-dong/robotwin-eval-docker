@@ -17,7 +17,6 @@ ENV no_proxy=$NO_PROXY
 # 安装系统基础依赖
 RUN apt-get update && apt-get install -y \
     python3 \
-    python3-venv \
     python3-pip \
     git \
     build-essential \
@@ -32,17 +31,13 @@ WORKDIR /
 RUN git clone https://github.com/RoboTwin-Platform/RoboTwin.git
 WORKDIR /RoboTwin
 
-# 创建虚拟环境 
-RUN python3 -m venv .venv --prompt robotwin
+# 直接使用系统Python环境，更新pip并安装基础环境
+RUN python3 -m pip install --upgrade pip setuptools wheel && bash script/_install.sh
 
-# 更新pip并激活虚拟环境安装基础环境
-RUN /bin/bash -c "source .venv/bin/activate && python -m pip install --upgrade pip setuptools wheel && bash script/_install.sh"
-
-# 激活虚拟环境并安装ACT相关依赖
-RUN /bin/bash -c "source .venv/bin/activate && \
-    cd policy/ACT && \
-    pip install pyquaternion pyyaml rospkg pexpect mujoco==2.3.7 dm_control==1.0.14 opencv-python matplotlib einops packaging h5py ipython && \
-    cd detr && pip install -e . && cd ../.."
+# 安装ACT相关依赖
+RUN cd policy/ACT && \
+    pip3 install pyquaternion pyyaml rospkg pexpect mujoco==2.3.7 dm_control==1.0.14 opencv-python matplotlib einops packaging h5py ipython && \
+    cd detr && pip3 install -e . && cd ../..
 
 # 创建必要目录
 RUN mkdir -p /models /results

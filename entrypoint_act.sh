@@ -120,9 +120,6 @@ fi
 # 进入工作目录
 cd /RoboTwin
 
-# 激活虚拟环境
-source .venv/bin/activate
-
 # 复制模型文件到指定位置
 echo "Preparing model files..."
 mkdir -p "$model_path"
