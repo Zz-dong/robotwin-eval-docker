@@ -1,0 +1,80 @@
+version: '3.8'
+
+services:
+  # ACT Policy 评估服务
+  robotwin-act-eval:
+    build:
+      context: .
+      dockerfile: Dockerfile_act
+      args:
+        # 代理设置，根据需要修改以下地址
+        HTTP_PROXY: http://proxy.company.com:8080
+        HTTPS_PROXY: https://proxy.company.com:8080
+        NO_PROXY: localhost,127.0.0.1,*.local
+    image: robotwin-act-eval:latest
+    container_name: robotwin-act-evaluation
+    
+    # 环境变量
+    environment:
+      - CUDA_VISIBLE_DEVICES=0
+    
+    # 卷挂载（根据你的服务器路径修改）
+    volumes:
+      # 模型文件目录（必需）- 修改为你的实际路径
+      - /path/to/your/models:/models
+      # RoboTwin assets目录（必需）- 修改为你的实际路径
+      - /path/to/your/assets:/RoboTwin/assets
+      # 结果输出目录
+      - /path/to/your/results:/results
+    
+    # GPU配置
+    runtime: nvidia
+    
+    # 默认命令（可以被docker-compose run覆盖）
+    command: ["--help"]
+
+  # DP Policy 评估服务
+  robotwin-dp-eval:
+    build:
+      context: .
+      dockerfile: Dockerfile_dp
+      args:
+        HTTP_PROXY: http://proxy.company.com:8080
+        HTTPS_PROXY: https://proxy.company.com:8080
+        NO_PROXY: localhost,127.0.0.1,*.local
+    image: robotwin-dp-eval:latest
+    container_name: robotwin-dp-evaluation
+    
+    environment:
+      - CUDA_VISIBLE_DEVICES=0
+    
+    volumes:
+      - /path/to/your/models:/models
+      - /path/to/your/assets:/RoboTwin/assets
+      - /path/to/your/results:/results
+    
+    runtime: nvidia
+    command: ["--help"]
+
+  # DP3 Policy 评估服务
+  robotwin-dp3-eval:
+    build:
+      context: .
+      dockerfile: Dockerfile_dp3
+      args:
+        HTTP_PROXY: http://proxy.company.com:8080
+        HTTPS_PROXY: https://proxy.company.com:8080
+        NO_PROXY: localhost,127.0.0.1,*.local
+    image: robotwin-dp3-eval:latest
+    container_name: robotwin-dp3-evaluation
+    
+    environment:
+      - CUDA_VISIBLE_DEVICES=0
+    
+    volumes:
+      - /path/to/your/models:/models
+      - /path/to/your/assets:/RoboTwin/assets
+      - /path/to/your/results:/results
+    
+    runtime: nvidia
+    command: ["--help"]

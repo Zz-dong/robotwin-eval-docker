@@ -1,0 +1,55 @@
+# RoboTwin ACT Model Evaluation Dockerfile
+# 使用devel版本以支持编译依赖，如pytorch3d、CuRobo等
+FROM nvidia/cuda:12.1-devel-ubuntu20.04
+
+ENV DEBIAN_FRONTEND=noninteractive
+ENV NVIDIA_VISIBLE_DEVICES=all
+ENV NVIDIA_DRIVER_CAPABILITIES=all
+
+# 代理设置（可选，在构建时通过--build-arg传入）
+ARG HTTP_PROXY
+ARG HTTPS_PROXY
+ARG NO_PROXY
+ENV http_proxy=$HTTP_PROXY
+ENV https_proxy=$HTTPS_PROXY
+ENV no_proxy=$NO_PROXY
+
+# 安装系统基础依赖
+RUN apt-get update && apt-get install -y \
+    python3.10 \
+    python3.10-venv \
+    python3-pip \
+    git \
+    build-essential \
+    libvulkan1 \
+    mesa-vulkan-drivers \
+    vulkan-tools \
+    ffmpeg \
+    && rm -rf /var/lib/apt/lists/*
+
+# 克隆RoboTwin仓库
+WORKDIR /
+RUN git clone https://github.com/RoboTwin-Platform/RoboTwin.git
+WORKDIR /RoboTwin
+
+# 创建虚拟环境
+RUN python3.10 -m venv .venv
+
+# 激活虚拟环境并安装基础环境
+RUN /bin/bash -c "source .venv/bin/activate && bash script/_install.sh"
+
+# 激活虚拟环境并安装ACT相关依赖
+RUN /bin/bash -c "source .venv/bin/activate && \
+    cd policy/ACT && \
+    pip install pyquaternion pyyaml rospkg pexpect mujoco==2.3.7 dm_control==1.0.14 opencv-python matplotlib einops packaging h5py ipython && \
+    cd detr && pip install -e . && cd ../.."
+
+# 创建必要目录
+RUN mkdir -p /models /results
+
+# 复制ACT专用入口脚本
+COPY entrypoint_act.sh /entrypoint_act.sh
+RUN chmod +x /entrypoint_act.sh
+
+ENTRYPOINT ["/entrypoint_act.sh"]
+CMD ["--help"]
