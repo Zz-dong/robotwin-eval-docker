@@ -1,6 +1,6 @@
 # RoboTwin ACT Model Evaluation Dockerfile
 # 使用devel版本以支持编译依赖，如pytorch3d、CuRobo等
-FROM nvidia/cuda:12.1-devel-ubuntu20.04
+FROM nvidia/cuda:12.1.0-devel-ubuntu20.04
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV NVIDIA_VISIBLE_DEVICES=all
